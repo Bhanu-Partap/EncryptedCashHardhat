@@ -222,11 +222,11 @@ contract ICO is Ownable {
         return (sale.startTime, sale.endTime);
     }
 
-    function getSoftCapReached() public view onlyOwner returns(bool) {
+    function getSoftCapReached() public view returns(bool) {
         return (totalFundsRaised >= softCapInFunds);
     }
 
-    function getHardCapReached() public view onlyOwner returns(bool) {
+    function getHardCapReached() public view returns(bool) {
         return (totalFundsRaised >= hardCapInFunds);
     }
 }
