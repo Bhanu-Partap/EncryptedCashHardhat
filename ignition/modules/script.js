@@ -184,3 +184,19 @@ async function getHardCapReached() {
         console.error('An error occurred:', error);
     }
 }
+
+const _startTime = await (ethers.provider.getBlock("latest")).timestamp + 2
+const _endTime = _startTime + 3600
+const _tokenPrice = ethers.parseEther('0.01')
+
+
+createSale(_startTime,_endTime,_tokenPrice)
+// buyTokens()
+// finalizeICO()
+// initiateRefund()
+// airdropTokens()
+// setAllowImmediateFinalization(_saleId, _allow)
+// getCurrentSaleId()
+// getSaleStartEndTime()
+// getSoftCapReached()
+// getHardCapReached()
