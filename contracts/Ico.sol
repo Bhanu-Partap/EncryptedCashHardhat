@@ -20,8 +20,8 @@ contract ICO is Ownable {
     uint256 public softCapInFunds;
     uint256 public hardCapInFunds; 
     uint256 public saleCount;
-    uint256 public totalFundsRaised; // Total funds raised in ETH
-    uint256 public totalTokensSold; // Total tokens sold in the ICO
+    uint256 public totalFundsRaised; 
+    uint256 public totalTokensSold;
     address[] public investors;
     bool public isICOFinalized = false;
     bool public isTokensAirdropped = false;

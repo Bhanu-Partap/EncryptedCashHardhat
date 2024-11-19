@@ -1,5 +1,6 @@
 require('dotenv').config();
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-contract-sizer");
 const { PRIVATE_KEY, RPC_URL_BSC,BSCSCAN_API_KEY} = process.env;
 
 

@@ -11,7 +11,8 @@
   "description": "",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.22.15"
+    "hardhat": "^2.22.15",
+    "hardhat-contract-sizer": "^2.10.0"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.8",

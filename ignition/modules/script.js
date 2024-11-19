@@ -20,6 +20,7 @@ const erc20Abi = ERC20.abi;
 const erc20Address = "0x6e6317545b222A6979B008e482dcc00c16121C82";
 const icoAddress = "0x304DCAE86e661Eb5F15AAA81D4F049626727Fb8e";
 const account = "0x02E7813237CDD2B288D0cFB98352DeeC93289766"
+const investor = "0xC5b448AbaEbAeEe1e0077FA455D1d543B51C322e"
 
 
 // await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -70,12 +71,12 @@ async function createSale(_startTime, _endTime,_tokenPrice) {
 }
 
 //investor functionality
-async function buyTokens(amount) {
+async function buyTokens(_amount) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const gasCostButTokens = await icoContract.methods.buyTokens().estimateGas()
+        const gasCostButTokens = await icoContract.methods.buyTokens().estimateGas({from : investor, value : _amount})
         const tx = await icoContract.methods.buyTokens().send({
-            from: account,
+            from: investor,
             gas: gasCostButTokens,
             value: amount
         })
@@ -283,18 +284,18 @@ async function getInvestorCount() {
 }
 
 
-const startTime =  Math.floor(Date.now() / 1000) + 5;
-console.log(startTime, " start Time");
+// const startTime =  Math.floor(Date.now() / 1000) + 5;
+// console.log(startTime, " start Time");
 
-const endTime = startTime + 3600    
-console.log(endTime, "  endTime");
+// const endTime = startTime + 3600    
+// console.log(endTime, "  endTime");
 
-const tokenPrice = Number(ethers.parseEther('0.01'))
-console.log(tokenPrice, " tokenPrice");
+// const tokenPrice = Number(ethers.parseEther('0.01'))
+// console.log(tokenPrice, " tokenPrice");
 
 
-createSale(startTime,endTime,tokenPrice)
-// buyTokens(ethers.parseEther('0.01'))
+// createSale(startTime,endTime,tokenPrice)
+buyTokens(ethers.parseEther('0.01'))
 // finalizeICO()
 // initiateRefund()
 // airdropTokens()
@@ -304,3 +305,4 @@ createSale(startTime,endTime,tokenPrice)
 // getSoftCapReached()
 // getHardCapReached()
 // getInvestorCount()
+// totalFundsRaised()
