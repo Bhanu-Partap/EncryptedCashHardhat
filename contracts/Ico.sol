@@ -99,7 +99,9 @@ contract ICO is Ownable {
         require(!sale.isFinalized, "Sale already finalized");
         uint256 tokenDecimals = 10 ** erc20token(token).decimals();
 
-        uint256 tokenPrice = sale.tokenPrice;
+        uint256 tokenPrice = sale.tokenPrice;                                                                                                           
+        require(msg.value % tokenPrice == 0, "Amount must be equal or multiple of the token price");
+
         uint256 tokensToBuy = (msg.value/ tokenPrice) * uint256(tokenDecimals);
         require(totalFundsRaised + msg.value <= hardCapInFunds, "Purchase exceeds hard cap in funds");
 
@@ -126,7 +128,7 @@ contract ICO is Ownable {
     }
 
     // Owner decides whether immediate finalization is allowed
-    function setAllowImmediateFinalization(uint256 saleId, bool _allow) external onlyOwner {
+    function setAllowImmediateFinalization(uint256 saleId, bool _allow) public onlyOwner {
         allowImmediateFinalization = _allow; 
         finalizeSaleIfEnded(saleId);
     }
@@ -228,5 +230,10 @@ contract ICO is Ownable {
 
     function getHardCapReached() public view returns(bool) {
         return (totalFundsRaised >= hardCapInFunds);
+    }
+
+    function getInvestorCount() public view returns(uint256 investorCount){
+        investorCount = investors.length;
+        return investorCount ;
     }
 }

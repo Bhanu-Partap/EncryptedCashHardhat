@@ -6,7 +6,7 @@ const { PRIVATE_KEY, RPC_URL_BSC,BSCSCAN_API_KEY} = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  // defaultNetwork: "BSC",
+  defaultNetwork: "BSC",
   networks: {
     hardhat: {
     },
@@ -18,7 +18,7 @@ module.exports = {
   solidity: "0.8.27",
   etherscan: {
     apiKey: {
-      bsc: BSCSCAN_API_KEY,
+      bscTestnet: BSCSCAN_API_KEY,
     },
   },
 

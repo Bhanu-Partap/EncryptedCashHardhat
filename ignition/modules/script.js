@@ -4,54 +4,64 @@ require("dotenv").config()
 
 const { RPC_URL_BSC,BSCSCAN_API_KEY} = process.env;
 
-
+// For Hardhat
+// const web3 = new Web3("http://127.0.0.1:8545"); 
 // For BSC
 const web3 = new Web3(RPC_URL_BSC);
 
-const ERC20 = require("../../artifacts/contracts/Ico.sol/ICO.json");
-const ICO = require("../../artifacts/contracts/Erc20.sol/erc20token.json");
+const ERC20 = require("../../artifacts/contracts/Erc20.sol/erc20token.json");
+const ICO  = require("../../artifacts/contracts/Ico.sol/ICO.json");
 
 // //Abi of contract
 const icoAbi = ICO.abi;
 const erc20Abi = ERC20.abi;
 
 // Contract Addresses
-const erc20Address = "";
-const icoAddress = "";
+const erc20Address = "0x6e6317545b222A6979B008e482dcc00c16121C82";
+const icoAddress = "0x304DCAE86e661Eb5F15AAA81D4F049626727Fb8e";
+const account = "0x02E7813237CDD2B288D0cFB98352DeeC93289766"
 
 
-await window.ethereum.request({ method: 'eth_requestAccounts' });
-// Get the currently selected account in MetaMask
-const accounts = await web3.eth.getAccounts();
-const account = accounts[0];
+// await window.ethereum.request({ method: 'eth_requestAccounts' });
+// // Get the currently selected account in MetaMask
+// const accounts = await web3.eth.getAccounts();
+// const account = accounts[0];
 
+//================= ICO CONTRACT SCRIPTING =================//
 // connect Metamask 
-if (typeof window.ethereum !== "undefined") {
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    }); 
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x61" }], // Bsc Testnet
-    //   params: [{ chainId: "0x38" }], // Bsc Mainnet
-    });
-    const userAccount = accounts[0];
-    const result = await window.ethereum.request({
-      method: "eth_getBalance",
-      params: [userAccount, "latest"],
-    });
-    console.log(result);
+async function connectMetamask(){
+    try {
+        if (typeof window.ethereum !== "undefined") {
+            const accounts = await window.ethereum.request({
+              method: "eth_requestAccounts",
+            }); 
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: "0x61" }], // Bsc Testnet
+            //   params: [{ chainId: "0x38" }], // Bsc Mainnet
+            });
+            const userAccount = accounts[0];
+            const result = await window.ethereum.request({
+              method: "eth_getBalance",
+              params: [userAccount, "latest"],
+            });
+            console.log(result);
+        }
+    } catch (error) {
+        console.log("An Error occured", error);
+        
+    }
 }
-
 
 //admin functionality
 async function createSale(_startTime, _endTime,_tokenPrice) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        // console.log("methods",icoContract.methods );
         const gasCostCreateSale = await icoContract.methods.createSale(_startTime, _endTime,_tokenPrice).estimateGas()
         const tx = await icoContract.methods.createSale(_startTime, _endTime,_tokenPrice).send({
             from: account,
-            gas:gasCostCreateSale , 
+            gas:gasCostCreateSale,
         });
         console.log('Transaction successful:', tx.transactionHash);
     } catch (error) {
@@ -60,13 +70,14 @@ async function createSale(_startTime, _endTime,_tokenPrice) {
 }
 
 //investor functionality
-async function buyTokens() {
+async function buyTokens(amount) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
         const gasCostButTokens = await icoContract.methods.buyTokens().estimateGas()
         const tx = await icoContract.methods.buyTokens().send({
             from: account,
             gas: gasCostButTokens,
+            value: amount
         })
         console.log('Transaction successful:', tx.transactionHash);
     } catch (error) {
@@ -143,7 +154,11 @@ async function setAllowImmediateFinalization(_saleId, _allow) {
 async function getCurrentSaleId() {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const tx = await icoContract.methods.getCurrentSaleId().call()
+        const gasCostGetCurrentSaleId = await icoContract.methods.getCurrentSaleId().estimateGas()
+        const tx = await icoContract.methods.getCurrentSaleId().send({
+            from:account,
+            gas: gasCostGetCurrentSaleId
+        })
         console.log('Transaction successful:', tx.transactionHash);
     } catch (error) {
         console.error('An error occurred:', error);
@@ -152,11 +167,12 @@ async function getCurrentSaleId() {
 }
 
 //public functionality
-async function getSaleStartEndTime() {
+async function getSaleStartEndTime(_saleId) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const tx = await icoContract.methods.getSaleStartEndTime().call()
-        console.log('Transaction successful:', tx.transactionHash);
+        // const gasCostGetSaleStartEndTime = await icoContract.methods.getSaleStartEndTime(_saleId).estimateGas()
+        const tx = await icoContract.methods.getSaleStartEndTime(_saleId).call()
+        console.log('Transaction successful:', tx);
     } catch (error) {
         console.error('An error occurred:', error);
         
@@ -185,18 +201,106 @@ async function getHardCapReached() {
     }
 }
 
-const _startTime = await (ethers.provider.getBlock("latest")).timestamp + 2
-const _endTime = _startTime + 3600
-const _tokenPrice = ethers.parseEther('0.01')
+//public functionality
+async function tokensBoughtByInvestor() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        const tx = await icoContract.methods.tokensBoughtByInvestor().call()
+        console.log('Tokens Bought By Investor :', tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+//public functionality
+async function contributions() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        const tx = await icoContract.methods.contributions().call()
+        console.log('Contributions :', tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+//public functionality
+async function totalTokensSold() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        const tx = await icoContract.methods.totalTokensSold().call()
+        console.log('Total Tokens Sold :', tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+//public functionality
+async function totalFundsRaised() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        const tx = await icoContract.methods.totalFundsRaised().call()
+        console.log('Total Funds Raised :', tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
 
 
-createSale(_startTime,_endTime,_tokenPrice)
-// buyTokens()
+//public functionality
+async function softCapInFunds() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        const tx = await icoContract.methods.softCapInFunds().call()
+        console.log("Soft Cap In Funds :", tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+
+//public functionality
+async function hardCapInFunds() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        const tx = await icoContract.methods.hardCapInFunds().call()
+        console.log("Hard Cap In Funds :", tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+
+//public functionality
+async function getInvestorCount() {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        // const gasCostGetInvestorCount = await icoContract.methods.getInvestorCount().estimateGas()
+        const tx =  icoContract.methods.getInvestorCount().call()
+        console.log("No. of Investors :", await tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+
+const startTime =  Math.floor(Date.now() / 1000) + 5;
+console.log(startTime, " start Time");
+
+const endTime = startTime + 3600    
+console.log(endTime, "  endTime");
+
+const tokenPrice = Number(ethers.parseEther('0.01'))
+console.log(tokenPrice, " tokenPrice");
+
+
+createSale(startTime,endTime,tokenPrice)
+// buyTokens(ethers.parseEther('0.01'))
 // finalizeICO()
 // initiateRefund()
 // airdropTokens()
 // setAllowImmediateFinalization(_saleId, _allow)
 // getCurrentSaleId()
-// getSaleStartEndTime()
+// getSaleStartEndTime(1)
 // getSoftCapReached()
 // getHardCapReached()
+// getInvestorCount()
