@@ -37,17 +37,6 @@ describe("ICO Contract", function () {
     expect(sale.isFinalized).to.equal(false);
   });
 
-  it("INVESTOR : Should allow investors to buy tokens", async function () {
-    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
-    const endTime = startTime + 36000; 
-    const tokenPrice = ethers.parseEther("0.1");
-    await ico.createSale(startTime, endTime, tokenPrice);
-    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("0.1") });
-    expect(await ico.contributions(investor1.getAddress())).to.equal(ethers.parseEther("0.1"));
-    expect(await ico.tokensBoughtByInvestor(investor1.getAddress())).to.equal(ethers.parseEther("1"));
-    expect(await ico.totalTokensSold()).to.equal(ethers.parseEther("1"));
-  });
-
   it("OWNER : Should prevent the owner from buying tokens", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
     const endTime = startTime + 3600; 
@@ -71,16 +60,36 @@ describe("ICO Contract", function () {
 
   it("OWNER : Should initiate refunds if soft cap is not reached", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
-    const endTime = startTime + 2;
+    const endTime = startTime + 1;
     const tokenPrice = ethers.parseEther("0.1");
     await ico.connect(owner).createSale(startTime, endTime, tokenPrice);
     await ico.connect(investor1).buyTokens({ value: ethers.parseEther("0.1")})
     await ico.connect(owner).setAllowImmediateFinalization(1,true)
-    setTimeout(() => {
-       ico.connect(owner).initiateRefund();
-    }, 5000);
-
-    await expect(await ethers.provider.getBalance(ico.getAddress())).to.equal(0);
-    await expect(await ico.contributions(investor1.getAddress())).to.equal(0);
+    expect ( await ico.connect(owner).initiateRefund());
+    expect(await ethers.provider.getBalance(ico.getAddress())).to.equal(0);
+    expect(await ico.contributions(investor1.getAddress())).to.equal(0);
   });
+
+  it("OWNER : Refund Initiate - sale ongoing", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 3600;
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.connect(owner).createSale(startTime, endTime, tokenPrice);
+    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("0.1")})
+    await ico.connect(owner).setAllowImmediateFinalization(1,true)
+    await expect( ico.connect(owner).initiateRefund()).revertedWith("Sale ongoing")
+  });
+
+
+  it("INVESTOR : Should allow investors to buy tokens", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 36000; 
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.createSale(startTime, endTime, tokenPrice);
+    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("0.1") });
+    expect(await ico.contributions(investor1.getAddress())).to.equal(ethers.parseEther("0.1"));
+    expect(await ico.tokensBoughtByInvestor(investor1.getAddress())).to.equal(ethers.parseEther("1"));
+    expect(await ico.totalTokensSold()).to.equal(ethers.parseEther("1"));
+  });
+
 });
