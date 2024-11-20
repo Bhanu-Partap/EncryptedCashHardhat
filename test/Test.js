@@ -82,12 +82,12 @@ describe("ICO Contract", function () {
     );
   });
 
-  it("ADMIN - BUY TOKEN: Should prevent buy token if no active sale", async function () {
+  it("INVESTOR - BUY TOKEN: Should prevent buy token if no active sale", async function () {
     await expect(ico.connect(investor1).buyTokens({ value: ethers.parseEther("1") })).to.be.revertedWith(
       "No active sale");
   });
 
-  it("ADMIN - BUY TOKEN: Should prevent buy token if amount is zero", async function () {
+  it("INVESTOR - BUY TOKEN: Should prevent buy token if amount is zero", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
     const endTime = startTime + 3600; 
     const tokenPrice = ethers.parseEther("0.1");
@@ -96,7 +96,54 @@ describe("ICO Contract", function () {
       "Enter a valid amount");
   });
 
-  it("ADMIN : Should finalize the ICO when hard cap is reached", async function () {
+  it("INVESTOR - BUY TOKEN: Should prevent buy token if sale already finalized", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 3600; 
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.createSale(startTime, endTime, tokenPrice);
+    await expect(ico.connect(investor1).buyTokens({ value: ethers.parseEther("0") })).to.be.revertedWith(
+      "Enter a valid amount");
+  });
+
+  it("INVESTOR - BUY TOKEN: Should prevent buy token if amount is not the multiple of token price", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 3600; 
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.createSale(startTime, endTime, tokenPrice);
+    await expect(ico.connect(investor1).buyTokens({ value: ethers.parseEther("0.001") })).to.be.revertedWith(
+      "Amount must be equal or multiple of the token price");
+  });
+
+  it("INVESTOR - BUY TOKEN: Should prevent buy token if amount is more than hard cap", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 3600; 
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.createSale(startTime, endTime, tokenPrice);
+    await expect(ico.connect(investor1).buyTokens({ value: ethers.parseEther("5001") })).to.be.revertedWith(
+      "Purchase exceeds hard cap in funds");
+  });
+
+
+  it("ADMIN - FINALIZE ICO : Should prevent finalize ico if sale is ongoing or soft cap not reached", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 4;
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.createSale(startTime, endTime, tokenPrice);
+    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("3") });
+    await expect(ico.connect(owner).finalizeICO()).to.be.revertedWith("Cannot finalize: Soft cap not reached or sale is ongoing");
+  });
+
+  it("ADMIN - FINALIZE ICO : Should finalize ico if soft cap is reached and admin want to finalize ico", async function () {
+    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+    const endTime = startTime + 1500;
+    const tokenPrice = ethers.parseEther("0.1");
+    await ico.createSale(startTime, endTime, tokenPrice);
+    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("1001") });
+    await ico.connect(owner).setAllowImmediateFinalization(1,true)
+    expect(await ico.allowImmediateFinalization()).to.be.true;
+  });
+
+  it("ADMIN - FINALIZE ICO : Should finalize the ICO when hard cap is reached", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
     const endTime = startTime + 4;
     const tokenPrice = ethers.parseEther("0.1");
