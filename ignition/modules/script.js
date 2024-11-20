@@ -14,13 +14,19 @@ const ICO  = require("../../artifacts/contracts/Ico.sol/ICO.json");
 
 // //Abi of contract
 const icoAbi = ICO.abi;
-const erc20Abi = ERC20.abi;
+const tokenAbi = ERC20.abi;
 
-// Contract Addresses
-const erc20Address ="0x6e6317545b222A6979B008e482dcc00c16121C82";
-const icoAddress ="0x304DCAE86e661Eb5F15AAA81D4F049626727Fb8e";
-const account ="0x02E7813237CDD2B288D0cFB98352DeeC93289766"
-const investor ="0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b"
+// Contract Addresses BSC
+// const tokenAddress ="0x6e6317545b222A6979B008e482dcc00c16121C82";
+// const icoAddress ="0x304DCAE86e661Eb5F15AAA81D4F049626727Fb8e";
+// const account ="0x02E7813237CDD2B288D0cFB98352DeeC93289766"
+// const investor ="0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b"
+
+// Contract Addresses Hardhat
+const tokenAddress ="0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const icoAddress ="0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const account ="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+const investor ="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
 
 
 // await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -285,6 +291,19 @@ async function getInvestorCount() {
 }
 
 
+//=============Investor============//
+
+async function userTokenBalance(_address) {
+    try {
+        const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+        const userBalance =   await tokenContract.methods.balanceOf(_address).call();
+        console.log("Token Balance of Investors :", userBalance);
+    } catch (error) {
+        console.error('An error occurred:', error);
+    }
+}
+
+
 // const startTime =  Math.floor(Date.now() / 1000) + 5;
 // console.log(startTime, " start Time");
 
@@ -300,7 +319,7 @@ console.log(value, " amount");
 
 
 // createSale(startTime,endTime,tokenPrice)
-buyTokens(value)
+// buyTokens(value)
 // finalizeICO()
 // initiateRefund()
 // airdropTokens()
@@ -311,3 +330,6 @@ buyTokens(value)
 // getHardCapReached()
 // getInvestorCount()
 // totalFundsRaised()
+
+//=====Investor====//
+userTokenBalance(investor)

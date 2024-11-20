@@ -5,7 +5,8 @@ async function main() {
 
   const accounts = await ethers.getSigners();
 
-  console.log("User Address :",accounts[0].address);
+  console.log("Admin Address :",accounts[0].address);
+  console.log("Investor Address :",accounts[1].address);
   const tokenName = "EncryptedCash Coin"; 
   const tokenSymbol = "ECC"; 
 
