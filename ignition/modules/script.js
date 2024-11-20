@@ -5,9 +5,9 @@ require("dotenv").config()
 const { RPC_URL_BSC,BSCSCAN_API_KEY} = process.env;
 
 // For Hardhat
-// const web3 = new Web3("http://127.0.0.1:8545"); 
+const web3 = new Web3("http://127.0.0.1:8545"); 
 // For BSC
-const web3 = new Web3(RPC_URL_BSC);
+// const web3 = new Web3(RPC_URL_BSC);
 
 const ERC20 = require("../../artifacts/contracts/Erc20.sol/erc20token.json");
 const ICO  = require("../../artifacts/contracts/Ico.sol/ICO.json");
@@ -17,10 +17,10 @@ const icoAbi = ICO.abi;
 const erc20Abi = ERC20.abi;
 
 // Contract Addresses
-const erc20Address = "0x6e6317545b222A6979B008e482dcc00c16121C82";
-const icoAddress = "0x304DCAE86e661Eb5F15AAA81D4F049626727Fb8e";
-const account = "0x02E7813237CDD2B288D0cFB98352DeeC93289766"
-const investor = "0xC5b448AbaEbAeEe1e0077FA455D1d543B51C322e"
+const erc20Address ="0x6e6317545b222A6979B008e482dcc00c16121C82";
+const icoAddress ="0x304DCAE86e661Eb5F15AAA81D4F049626727Fb8e";
+const account ="0x02E7813237CDD2B288D0cFB98352DeeC93289766"
+const investor ="0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b"
 
 
 // await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -74,11 +74,12 @@ async function createSale(_startTime, _endTime,_tokenPrice) {
 async function buyTokens(_amount) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const gasCostButTokens = await icoContract.methods.buyTokens().estimateGas({from : investor, value : _amount})
+        const gasCostBuyTokens = await icoContract.methods.buyTokens().estimateGas({
+            from : investor, value : _amount})
         const tx = await icoContract.methods.buyTokens().send({
             from: investor,
-            gas: gasCostButTokens,
-            value: amount
+            value: _amount,
+            gas: gasCostBuyTokens
         })
         console.log('Transaction successful:', tx.transactionHash);
     } catch (error) {
@@ -293,9 +294,13 @@ async function getInvestorCount() {
 // const tokenPrice = Number(ethers.parseEther('0.01'))
 // console.log(tokenPrice, " tokenPrice");
 
+const value = ethers.parseEther('0.01')
+console.log(value, " amount");
+
+
 
 // createSale(startTime,endTime,tokenPrice)
-buyTokens(ethers.parseEther('0.01'))
+buyTokens(value)
 // finalizeICO()
 // initiateRefund()
 // airdropTokens()
