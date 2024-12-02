@@ -7,11 +7,27 @@ describe("ICO Contract", function () {
   beforeEach(async function () {
     [owner, investor1, investor2] = await ethers.getSigners();
 
-    // Deploy token contract
+
+    // Deploy IcoToken contract
     Token = await ethers.getContractFactory("erc20token");
     token = await Token.connect(owner).deploy("EncryptedCash Coin", "ECC");
     await token.waitForDeployment();
- 
+    console.log("Ico Token Contract Address",await token.getAddress());
+    
+
+    // Deploy USDT contract
+    stablecoin = await ethers.getContractFactory("stablecoin");
+    usdt = await stablecoin.connect(owner).deploy("Tether", "USDT");
+    await usdt.waitForDeployment();
+    console.log("USDT Contract Address",await usdt.getAddress());
+
+     
+    // Deploy USDC contract
+    stablecoin1 = await ethers.getContractFactory("stablecoin");
+    usdc = await stablecoin1.connect(owner).deploy("USD Coin", "USDC");
+    await usdc.waitForDeployment();
+    console.log("USDC Contract Address",await usdc.getAddress());
+
 
     // Deploy ICO contract
     ICO = await ethers.getContractFactory("ICO");
@@ -20,6 +36,7 @@ describe("ICO Contract", function () {
     icoAddress = await token.getAddress()
     // console.log("icoAddress",icoAddress);
   });
+  
 
   it("ADMIN - CREATE SALE : Should deploy the contract with correct initial values", async function () {
     expect(await ico.token()).to.equal(await token.getAddress());

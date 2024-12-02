@@ -31,7 +31,6 @@ async function main() {
   const usdtAddress = await usdtContract.getAddress()
   console.log("USDT Address",usdtAddress);
 
-
   
   const softCap = ethers.parseEther("100")
   const hardCap = ethers.parseEther("200")
