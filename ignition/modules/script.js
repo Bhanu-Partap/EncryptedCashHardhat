@@ -219,7 +219,6 @@ async function airdropTokens() {
 
 
 
-
 async function setAllowImmediateFinalization(_saleId, _allow) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
@@ -368,6 +367,26 @@ async function userTokenBalance(_address) {
         console.error('An error occurred:', error);
     }
 }
+
+
+async function walletTokenBalance(tokenAddress, userAddress) {
+    try {
+        const abi = [
+            "function balanceOf(address owner) view returns (uint256)",
+            "function decimals() view returns (uint8)"
+        ];
+        const contract = new web3.eth.Contract(abi, tokenAddress);
+        const rawBalance = await contract.methods.balanceOf(userAddress).call();
+        const decimals = await contract.methods.decimals().call();
+        const balance = rawBalance / Math.pow(10, decimals);
+        console.log("Token Balance of Investors :", balance);
+    } catch (error) {
+        console.error('An error occurred:', error);
+        
+    }
+}
+
+
 
 
 async function softCapAmount() {
