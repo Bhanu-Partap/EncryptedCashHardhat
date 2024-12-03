@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("ICO Contract", function () {
-  let ICO, ico, Token, token, owner, investor1, investor2,icoAddress;
+  let ICO, ico, Token, token, owner, investor1, investor2,icoAddress, usdt, usdc;
 
   beforeEach(async function () {
     [owner, investor1, investor2] = await ethers.getSigners();
@@ -12,36 +12,45 @@ describe("ICO Contract", function () {
     Token = await ethers.getContractFactory("erc20token");
     token = await Token.connect(owner).deploy("EncryptedCash Coin", "ECC");
     await token.waitForDeployment();
-    console.log("Ico Token Contract Address",await token.getAddress());
+    const tokenAddress = await token.getAddress()
+    // console.log("Ico Token Contract Address",tokenAddress);
     
 
     // Deploy USDT contract
     stablecoin = await ethers.getContractFactory("stablecoin");
     usdt = await stablecoin.connect(owner).deploy("Tether", "USDT");
     await usdt.waitForDeployment();
-    console.log("USDT Contract Address",await usdt.getAddress());
+    const usdtAddress = await usdt.getAddress()
+    // console.log("USDT Contract Address",usdtAddress);
 
      
     // Deploy USDC contract
     stablecoin1 = await ethers.getContractFactory("stablecoin");
     usdc = await stablecoin1.connect(owner).deploy("USD Coin", "USDC");
     await usdc.waitForDeployment();
-    console.log("USDC Contract Address",await usdc.getAddress());
+    const usdcAddress = await usdc.getAddress()
+    // console.log("USDC Contract Address",usdcAddress);
+
+
+    const priceFeedETH = "0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7"
+    const priceFeedBNB = "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526"
+    const priceFeedUSDT = "0xEca2605f0BCF2BA5966372C99837b1F182d3D620"
+    const priceFeedUSDC = "0x90c069C4538adAc136E051052E14c1cD799C41B7"
 
 
     // Deploy ICO contract
     ICO = await ethers.getContractFactory("ICO");
-    ico = await ICO.connect(owner).deploy(token.getAddress(), ethers.parseEther("100"), ethers.parseEther("500"));
+    ico = await ICO.connect(owner).deploy(tokenAddress, usdtAddress, usdcAddress ,ethers.parseEther("100"), ethers.parseEther("200"),priceFeedETH, priceFeedBNB, priceFeedUSDT, priceFeedUSDC);
     await ico.waitForDeployment();
     icoAddress = await token.getAddress()
     // console.log("icoAddress",icoAddress);
   });
-  
+
 
   it("ADMIN - CREATE SALE : Should deploy the contract with correct initial values", async function () {
     expect(await ico.token()).to.equal(await token.getAddress());
-    expect(await ico.softCapInFunds()).to.equal(ethers.parseEther("100"));
-    expect(await ico.hardCapInFunds()).to.equal(ethers.parseEther("500"));
+    expect(await ico.softCapInUSD()).to.equal(ethers.parseEther("100"));
+    expect(await ico.hardCapInUSD()).to.equal(ethers.parseEther("200"));
   });
 
   it("ADMIN - CREATE SALE : Should not allow non-owner to create a sale", async function () {
@@ -55,14 +64,18 @@ describe("ICO Contract", function () {
 
   it("ADMIN - CREATE SALE : Should create a new sale", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 3600;
+    console.log(startTime);
     const endTime = startTime + 7200; 
+    console.log(endTime);
     const tokenPrice = ethers.parseEther("0.1");
+    console.log(tokenPrice);
     await ico.connect(owner).createSale(startTime, endTime, tokenPrice);
     const sale = await ico.sales(1);
+    console.log(sale);
     expect(sale.startTime).to.equal(startTime);
     expect(sale.endTime).to.equal(endTime);
     expect(sale.tokenPrice).to.equal(tokenPrice);
-    expect(sale.tokensSold).to.equal(0);
+    expect(Number(sale.tokensSold)).to.equal(0);
     expect(sale.isFinalized).to.equal(false);
   });
 

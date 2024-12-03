@@ -102,10 +102,10 @@ async function buyTokens(paymentMethod,paymentAmount) {
         let tx;
         
             if(paymentMethod === 0 ||paymentMethod === 1 ){
-                console.log("entered If Lop");
+                // console.log("entered If Lop");
                 const gasCostBuyTokensNative = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).estimateGas({
                     from : investor, value : paymentAmount})
-                    console.log("gasCostBuyTokensNative",gasCostBuyTokensNative);
+                    // console.log("gasCostBuyTokensNative",gasCostBuyTokensNative);
                     
                 tx = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).send({
                     from: investor,
@@ -114,13 +114,11 @@ async function buyTokens(paymentMethod,paymentAmount) {
                 })
             }
             else if(paymentMethod === 2 ||paymentMethod === 3 ){
-                console.log("Entered Else If loop");
-                console.log("Payment Method",paymentMethod);
-                console.log("Payment Amount",paymentAmount);
-                
+                // console.log("Entered Else If loop");
+                // console.log("Payment Method",paymentMethod);
+                // console.log("Payment Amount",paymentAmount);
                 const gasCostBuyTokens = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).estimateGas({from: investor})
-                    console.log("gasCostBuyTokens",gasCostBuyTokens);
-                    
+                    // console.log("gasCostBuyTokens",gasCostBuyTokens);
                 tx = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).send({
                     from: investor,
                     gas: gasCostBuyTokens
@@ -139,28 +137,32 @@ async function calculateTokenAmount(paymentMethod,paymentAmount) {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
 
         if(paymentMethod === 0|| (paymentMethod === 1)) {
-            const gasCostBuyTokens = await icoContract.methods.calculateTokenAmount(paymentMethod,paymentAmount).estimateGas({
-                from : investor, value : _amount})
-            const tx = await icoContract.methods.calculateTokenAmount(paymentMethod,paymentAmount).send({
-                from: investor,
-                value: _amount,
-                gas: gasCostBuyTokens
-            })
+            const tx = await icoContract.methods.calculateTokenAmount(paymentMethod,paymentAmount).call()
         }
         else if(paymentMethod === 2|| (paymentMethod === 3)){
-            const gasCostBuyTokens = await icoContract.methods.calculateTokenAmount(paymentMethod,paymentAmount).estimateGas({
-                from : investor, value : paymentAmount})
-            const tx = await icoContract.methods.calculateTokenAmount(paymentMethod,paymentAmount).send({
-                from: investor,
-                value: paymentAmount,
-                gas: gasCostBuyTokens
-            })
+            const tx = await icoContract.methods.calculateTokenAmount(paymentMethod,paymentAmount).call()
         }
-        
-        console.log('Transaction successful:', tx.transactionHash);
+        console.log('Transaction successful:', tx);
     } catch (error) {
         console.error('An error occurred:', error);
         
+    }
+}
+
+
+
+async function calculatePaymentAmount(paymentMethod, tokenAmount) {
+    try {
+        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+        if (paymentMethod === 0|| (paymentMethod === 1)) {
+        const tx = await icoContract.methods.calculatePaymentAmount(paymentMethod, tokenAmount).call()
+        }
+        else if(paymentMethod === 2|| (paymentMethod === 3)){
+        const tx = await icoContract.methods.calculatePaymentAmount(paymentMethod, tokenAmount).call()
+        }
+        console.log('Transaction successful:', tx);
+    } catch (error) {
+        console.error('An error occurred:', error);
     }
 }
 
@@ -213,6 +215,8 @@ async function airdropTokens() {
         
     }
 }
+
+
 
 
 
