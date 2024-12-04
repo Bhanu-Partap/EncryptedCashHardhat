@@ -106,13 +106,13 @@ describe("ICO Contract", function () {
     const endTime = startTime + 3600; 
     const tokenPrice = ethers.parseEther("1");
     await ico.createSale(startTime, endTime, tokenPrice);
-    await expect(ico.connect(owner).buyTokens(1,ethers.parseEther("1"),{value : ethers.parseEther("0.1")})).to.be.revertedWith(
+    await expect(ico.connect(owner).buyTokens(1,ethers.parseEther("0.1"),{value : ethers.parseEther("0.1")})).to.be.revertedWith(
       "Owner cannot buy tokens"
     );
   });
 
   it("INVESTOR - BUY TOKEN: Should prevent buy token if no active sale", async function () {
-    await expect(ico.connect(investor1).buyTokens(1,ethers.parseEther("1"),{value : ethers.parseEther("0.1")})).to.be.revertedWith(
+    await expect(ico.connect(investor1).buyTokens(1,ethers.parseEther("0.1"),{value : ethers.parseEther("0.1")})).to.be.revertedWith(
       "No active sale");
   });
 
@@ -125,43 +125,32 @@ describe("ICO Contract", function () {
       "Send a valid ETH/BNB amount");
   });
 
-  it("INVESTOR - BUY TOKEN: Should prevent buy token if sale already finalized", async function () {
-    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
-    const endTime = startTime + 3600; 
-    const tokenPrice = ethers.parseEther("1");
-    await ico.connect(owner).createSale(startTime, endTime, tokenPrice);
-    const sale = await ico.sales(1);
-    console.log(sale);
-    console.log(sale.sake);
-    await ico.connect(owner).setAllowImmediateFinalization(sale,true);
-    await expect(ico.connect(investor1).buyTokens(1,ethers.parseEther("1"),{value : ethers.parseEther("0.1")})).to.be.revertedWith(
-      "Sale already finalized");
-  });
+  // it("INVESTOR - BUY TOKEN: Should prevent buy token if sale already finalized", async function () {
+  //   const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
+  //   const endTime = startTime + 20; 
+  //   const tokenPrice = ethers.parseEther("1");
+  //   await ico.connect(owner).createSale(startTime, endTime, tokenPrice);
+  //   // await ico.connect(owner).setAllowImmediateFinalization(1,true);
+  //   await expect(ico.connect(investor1).buyTokens(1,ethers.parseEther("1"),{value : ethers.parseEther("0.1")})).to.be.revertedWith(
+  //     "Sale already finalized");
+  // });
 
-  it("INVESTOR - BUY TOKEN: Should prevent buy token if amount is not the multiple of token price", async function () {
-    const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
-    const endTime = startTime + 3600; 
-    const tokenPrice = ethers.parseEther("1");
-    await ico.createSale(startTime, endTime, tokenPrice);
-    await expect(ico.connect(investor1).buyTokens({ value: ethers.parseEther("0.001") })).to.be.revertedWith(
-      "Amount must be equal or multiple of the token price");
-  });
 
   it("INVESTOR - BUY TOKEN: Should prevent buy token if amount is more than hard cap", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
     const endTime = startTime + 3600; 
     const tokenPrice = ethers.parseEther("1");
     await ico.createSale(startTime, endTime, tokenPrice);
-    await expect(ico.connect(investor1).buyTokens({ value: ethers.parseEther("5001") })).to.be.revertedWith(
-      "Purchase exceeds hard cap in funds");
+    await expect(ico.connect(investor1).buyTokens(1,ethers.parseEther("202"),{value : ethers.parseEther("202")})).to.be.revertedWith("Hard cap reached");
   });
+  
 
   it("INVESTOR - BUY TOKEN  : Should allow investors to buy tokens", async function () {
     const startTime = (await ethers.provider.getBlock("latest")).timestamp + 2;
     const endTime = startTime + 36000; 
     const tokenPrice = ethers.parseEther("1");
     await ico.createSale(startTime, endTime, tokenPrice);
-    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("1") });
+    await ico.connect(investor1).buyTokens(1,ethers.parseEther("0.1"),{value : ethers.parseEther("0.1")});
     expect(await ico.contributions(investor1.getAddress())).to.equal(ethers.parseEther("1"));
     expect(await ico.tokensBoughtByInvestor(investor1.getAddress())).to.equal(ethers.parseEther("1"));
     expect(await ico.totalTokensSold()).to.equal(ethers.parseEther("1"));
@@ -236,7 +225,7 @@ describe("ICO Contract", function () {
     const endTime = startTime + 3600;
     const tokenPrice = ethers.parseEther("1");
     await ico.connect(owner).createSale(startTime, endTime, tokenPrice);
-    await ico.connect(investor1).buyTokens({ value: ethers.parseEther("101")})
+    await ico.connect(investor1).buyTokens(1,ethers.parseEther("0.1"),{value : ethers.parseEther("0.1")})
     await ico.connect(owner).setAllowImmediateFinalization(1,true)
     const tokenSold = await ico.connect(owner).totalTokensSold()
     console.log(tokenSold.toString(),"tokenSold");

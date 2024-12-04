@@ -5,10 +5,10 @@ require("dotenv").config()
 const { RPC_URL_BSC,BSCSCAN_API_KEY} = process.env;
 
 // For Hardhat
-const web3 = new Web3("http://127.0.0.1:8545"); 
+// const web3 = new Web3("http://127.0.0.1:8545"); 
 
 // For BSC
-// const web3 = new Web3(RPC_URL_BSC);
+const web3 = new Web3(RPC_URL_BSC);
 
 const ERC20 = require("../../artifacts/contracts/Erc20.sol/erc20token.json");
 const ICO  = require("../../artifacts/contracts/Ico.sol/ICO.json");
@@ -349,8 +349,8 @@ async function totalFundsRaised() {
 async function getInvestorCount() {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const tx =  icoContract.methods.getInvestorCount().call()
-        console.log("No. of Investors :", await tx);
+        const tx = await icoContract.methods.getInvestorCount().call()
+        console.log("No. of Investors :",  tx);
     } catch (error) {
         console.error('An error occurred:', error);
     }
@@ -361,6 +361,7 @@ async function getInvestorCount() {
 async function userTokenBalance(_address) {
     try {
         const tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+        console.log( tokenContract.methods);
         const userBalance =   await tokenContract.methods.balanceOf(_address).call();
         console.log("Token Balance of Investors :", userBalance);
     } catch (error) {
@@ -371,15 +372,11 @@ async function userTokenBalance(_address) {
 
 async function walletTokenBalance(tokenAddress, userAddress) {
     try {
-        const abi = [
-            "function balanceOf(address owner) view returns (uint256)",
-            "function decimals() view returns (uint8)"
-        ];
-        const contract = new web3.eth.Contract(abi, tokenAddress);
-        const rawBalance = await contract.methods.balanceOf(userAddress).call();
-        const decimals = await contract.methods.decimals().call();
-        const balance = rawBalance / Math.pow(10, decimals);
-        console.log("Token Balance of Investors :", balance);
+        
+        const contract = new web3.eth.Contract(stablecoinAbi, tokenAddress);
+        // console.log(contract);
+        const rawBalance = await contract.methods.balanceOf(userAddress).call()
+        console.log("Token Balance of Investors :", rawBalance);
     } catch (error) {
         console.error('An error occurred:', error);
         
@@ -422,14 +419,14 @@ async function saleDetails(_index) {
 }
 
 
-const startTime =  Math.floor(Date.now() / 1000) +25;
-console.log(startTime, " start Time");
+// const startTime =  Math.floor(Date.now() / 1000) +25;
+// console.log(startTime, " start Time");
 
-const endTime = startTime + 3600    
-console.log(endTime, "  endTime");
+// const endTime = startTime + 3600    
+// console.log(endTime, "  endTime");
 
-const tokenPrice = Number(ethers.parseEther('1'))
-console.log(tokenPrice, " tokenPrice");
+// const tokenPrice = Number(ethers.parseEther('1'))
+// console.log(tokenPrice, " tokenPrice");
 
 // const value = ethers.parseEther('0.01')
 // console.log(value, " amount");
@@ -460,3 +457,4 @@ console.log(tokenPrice, " tokenPrice");
 // softCapAmount()
 // hardCapAmount()
 // saleDetails(1)
+walletTokenBalance("0x29F135E92205f8f19dfB5Ea4D8885594FE77C8BD","0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b")
