@@ -6,7 +6,7 @@ const { PRIVATE_KEY,PRIVATE_KEY_INVESTOR, RPC_URL_BSC,BSCSCAN_API_KEY} = process
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  defaultNetwork: "BSC",
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {
     },
