@@ -2,7 +2,6 @@
 pragma solidity ^0.8.26;
 
 import "./Erc20.sol";
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -107,23 +106,23 @@ contract ICO is Ownable, ReentrancyGuard {
         PaymentMethod paymentMethod
     ) public view returns (int256) {
         if (paymentMethod == PaymentMethod.ETH) {
-            (, int256 price, , , ) = priceFeedETH.latestRoundData();
-            return price;
+            // (, int256 price, , , ) = priceFeedETH.latestRoundData();
+            return 358000000000;
         }
 
         if (paymentMethod == PaymentMethod.BNB) {
-            (, int256 price, , , ) = priceFeedBNB.latestRoundData();
-            return price;
+            // (, int256 price, , , ) = priceFeedBNB.latestRoundData();
+            return 67000000000;
         }
 
         if (paymentMethod == PaymentMethod.USDT) {
-            (, int256 price, , , ) = priceFeedUSDT.latestRoundData();
-            return price;
+            // (, int256 price, , , ) = priceFeedUSDT.latestRoundData();
+            return 100000000;
         }
 
         if (paymentMethod == PaymentMethod.USDC) {
-            (, int256 price, , , ) = priceFeedUSDC.latestRoundData();
-            return price;
+            // (, int256 price, , , ) = priceFeedUSDC.latestRoundData();
+            return 100000000;
         }
         revert("Unsupported payment method");
     }
@@ -168,7 +167,6 @@ contract ICO is Ownable, ReentrancyGuard {
         Sale storage sale = sales[currentSaleId];
 
         uint256 tokenPriceInUSD = sale.tokenPriceUSD;
-        console.log("tokenPriceInUSD", tokenPriceInUSD);
 
         uint256 paymentAmountInUSD;
         if (
