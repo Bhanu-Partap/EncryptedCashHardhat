@@ -9,7 +9,6 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract ICO is Ownable, ReentrancyGuard {
 
     // Chainlink Price Feeds
-    AggregatorV3Interface public priceFeedETH;
     AggregatorV3Interface public priceFeedBNB;
     AggregatorV3Interface public priceFeedUSDT;
     AggregatorV3Interface public priceFeedUSDC;
@@ -24,14 +23,13 @@ contract ICO is Ownable, ReentrancyGuard {
     }
 
     enum PaymentMethod {
-        ETH,
         BNB,
         USDT,
         USDC
     }
 
     // State variables
-    erc20token public token;
+    icotoken public token;
     uint256 public softCapInUSD;
     uint256 public hardCapInUSD;
     uint256 public saleCount;
@@ -55,32 +53,31 @@ contract ICO is Ownable, ReentrancyGuard {
     mapping(address => mapping(PaymentMethod => uint256)) public investorPayments;
 
     // Events
-    event ICOFinalized(uint256 totalTokensSold);
-    event ImmediateFinalization(uint256 saleId);
-    event RefundInitiated(address investor, uint256 amount , PaymentMethod paymentMethod) ;
-    event TokenAirdropped(address investor, uint256 airdroppedAmount);
+    event ICOFinalized(uint256 indexed totalTokensSold);
+    event ImmediateFinalization(uint256 indexed saleId);
+    event RefundInitiated(address indexed investor, uint256 amount , PaymentMethod paymentMethod) ;
+    event TokenAirdropped(address indexed investor, uint256 airdroppedAmount);
     event TokensPurchased(
-        address buyer,
-        uint256 saleId,
+        address indexed buyer,
+        uint256 indexed saleId,
         uint256 tokenPurchaseAmount,
         uint256 tokenPriceUSD,
         uint256 amountPaid,
         PaymentMethod paymentMethod
     );
     event NewSaleCreated(
-        uint256 saleId,
+        uint256 indexed saleId,
         uint256 startTime,
         uint256 endTime,
         uint256 tokenPriceUSD
     );
 
     constructor(
-        erc20token _token,
+        icotoken _token,
         address _usdt,
         address _usdc,
         uint256 _softCapInUSD,
         uint256 _hardCapInUSD,
-        address _priceFeedETH,
         address _priceFeedBNB,
         address _priceFeedUSDT,
         address _priceFeedUSDC
@@ -90,7 +87,6 @@ contract ICO is Ownable, ReentrancyGuard {
         hardCapInUSD = _hardCapInUSD;
         usdt = _usdt;
         usdc = _usdc;
-        priceFeedETH = AggregatorV3Interface(_priceFeedETH);
         priceFeedBNB = AggregatorV3Interface(_priceFeedBNB);
         priceFeedUSDT = AggregatorV3Interface(_priceFeedUSDT);
         priceFeedUSDC = AggregatorV3Interface(_priceFeedUSDC);
@@ -106,11 +102,6 @@ contract ICO is Ownable, ReentrancyGuard {
         view
         returns (int256)
     {
-        if (paymentMethod == PaymentMethod.ETH) {
-            (, int256 price, , , ) = priceFeedETH.latestRoundData();
-            return price;
-        }
-
         if (paymentMethod == PaymentMethod.BNB) {
             (, int256 price, , , ) = priceFeedBNB.latestRoundData();
             return price;
@@ -128,6 +119,12 @@ contract ICO is Ownable, ReentrancyGuard {
         revert("Unsupported payment method");
     }
 
+    //Constructor Data
+    // 100000000000000000000
+    // 200000000000000000000
+    // 0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526
+    // 0xEca2605f0BCF2BA5966372C99837b1F182d3D620
+    // 0x90c069C4538adAc136E051052E14c1cD799C41B7
 
     function createSale(
         uint256 _startTime,
@@ -172,7 +169,7 @@ contract ICO is Ownable, ReentrancyGuard {
 
         uint256 paymentAmountInUSD;
 
-        if (paymentMethod == PaymentMethod.ETH || paymentMethod == PaymentMethod.BNB) {
+        if (paymentMethod == PaymentMethod.BNB) {
             paymentAmountInUSD = (uint256(price) * paymentAmount) / uint256(PRECISION_18);  
         } else if (paymentMethod == PaymentMethod.USDC || paymentMethod == PaymentMethod.USDT) {
         uint256 stablecoinDecimals = 6; 
@@ -201,7 +198,7 @@ function calculatePaymentAmount(PaymentMethod paymentMethod, uint256 tokenAmount
     uint256 totalPaymentInUSD = (tokenAmount * tokenPriceInUSD) / PRECISION_18;
 
     uint256 paymentAmount;
-    if (paymentMethod == PaymentMethod.ETH || paymentMethod == PaymentMethod.BNB) {
+    if (paymentMethod == PaymentMethod.BNB) {
         paymentAmount = (totalPaymentInUSD * PRECISION_18) / uint256(price);
     } else if (paymentMethod == PaymentMethod.USDT || paymentMethod == PaymentMethod.USDC) {
         paymentAmount = (totalPaymentInUSD * (10 ** 6)) / uint256(price);
@@ -213,7 +210,6 @@ function calculatePaymentAmount(PaymentMethod paymentMethod, uint256 tokenAmount
 }
 
 
-
     function buyTokens(PaymentMethod paymentMethod, uint256 paymentAmount) external payable icoNotFinalized {
     require(msg.sender != owner(), "Owner cannot buy tokens");
     uint256 currentSaleId = getCurrentSaleId();
@@ -223,9 +219,9 @@ function calculatePaymentAmount(PaymentMethod paymentMethod, uint256 tokenAmount
     require(!sale.isFinalized, "Sale already finalized");
 
     uint256 tokenAmount;
-    if (paymentMethod == PaymentMethod.BNB || paymentMethod == PaymentMethod.ETH) {
-        // Handle native currency payments (ETH/BNB)
-        require(msg.value > 0, "Send a valid ETH/BNB amount");
+    if (paymentMethod == PaymentMethod.BNB ) {
+        // Handle native currency payments (BNB)
+        require(msg.value > 0, "Send a valid BNB amount");
         tokenAmount = calculateTokenAmount(paymentMethod, msg.value);
         investorPayments[msg.sender][paymentMethod] += msg.value;
     } else if (
@@ -277,7 +273,7 @@ function calculatePaymentAmount(PaymentMethod paymentMethod, uint256 tokenAmount
     function setAllowImmediateFinalization(uint256 saleId, bool _allow) public onlyOwner {
         allowImmediateFinalization = _allow; 
         Sale storage sale = sales[saleId];
-
+            sale.endTime= block.timestamp;
         if (block.timestamp <= sale.endTime && !sale.isFinalized) {
             sale.isFinalized = true;
         }
@@ -320,7 +316,7 @@ function calculatePaymentAmount(PaymentMethod paymentMethod, uint256 tokenAmount
 }
 
     function _transferFundsToOwner() private {
-    // Transfer native funds (ETH/BNB)
+    // Transfer native funds (BNB)
     uint256 nativeBalance = address(this).balance;
     if (nativeBalance > 0) {
         (bool success, ) = payable(owner()).call{value: nativeBalance}("");
@@ -370,15 +366,15 @@ function calculatePaymentAmount(PaymentMethod paymentMethod, uint256 tokenAmount
         address investor = investors[i];
 
         // Refund contributions for all payment methods
-        for (uint8 j = 0; j < 4; j++) { 
+        for (uint8 j = 0; j < 3; j++) { 
             PaymentMethod paymentMethod = PaymentMethod(j);
             uint256 amount = investorPayments[investor][paymentMethod];
 
             if (amount > 0) {
                 investorPayments[investor][paymentMethod] = 0;
-                if (paymentMethod == PaymentMethod.BNB || paymentMethod == PaymentMethod.ETH) {
+                if (paymentMethod == PaymentMethod.BNB) {
                     (bool sent, ) = payable(investor).call{value: amount}("");
-                    require(sent, "ETH/BNB refund failed");
+                    require(sent, "BNB refund failed");
                 } else if (paymentMethod == PaymentMethod.USDT || paymentMethod == PaymentMethod.USDC) {
                     IERC20 stablecoin = paymentMethod == PaymentMethod.USDT
                         ? IERC20(usdt)

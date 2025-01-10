@@ -9,8 +9,7 @@ contract erc20token is IERC20, ERC20 {
     function PublicMint(address recipient, uint256 Amount) public {
         _mint(recipient, Amount);
     }
-
-
+    
      function decimals() public pure override  returns (uint8) {
         return 6;
     }

@@ -20,21 +20,21 @@ const tokenAbi = ERC20.abi;
 const stablecoinAbi = STABLECOIN.abi;
 
 // Contract Addresses BSC
-const tokenAddress ="0x5d0561433AC8c970aE584b5b5c9f9e1268ca3140";
-const icoAddress ="0x3Ff930c86c9C2e58055d5b0a9cfF4C34C68519b5";
-const account ="0x02E7813237CDD2B288D0cFB98352DeeC93289766"
-const investor ="0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b"
-const usdc = "0x29F135E92205f8f19dfB5Ea4D8885594FE77C8BD"
-const usdt = "0x635979B242FCD793cBF74b6FB5c29e380aF73CFB"
+// const tokenAddress ="0x5d0561433AC8c970aE584b5b5c9f9e1268ca3140";
+// const icoAddress ="0x3Ff930c86c9C2e58055d5b0a9cfF4C34C68519b5";
+// const account ="0x02E7813237CDD2B288D0cFB98352DeeC93289766"
+// const investor ="0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b"
+// const usdc = "0x29F135E92205f8f19dfB5Ea4D8885594FE77C8BD"
+// const usdt = "0x635979B242FCD793cBF74b6FB5c29e380aF73CFB"
 
 
 // Contract Addresses Hardhat
-// const tokenAddress ="0x0165878A594ca255338adfa4d48449f69242Eb8F";
-// const icoAddress ="0x8A791620dd6260079BF849Dc5567aDC3F2FdC318";
-// const account ="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-// const investor ="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-// const usdc = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
-// const usdt = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
+const tokenAddress ="0x0165878A594ca255338adfa4d48449f69242Eb8F";
+const icoAddress ="0x8A791620dd6260079BF849Dc5567aDC3F2FdC318";
+const account ="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+const investor ="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+const usdc = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
+const usdt = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853"
 
 
 // await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -71,7 +71,7 @@ async function connectMetamask(){
 }
 
 
-
+// admin
 async function createSale(_startTime, _endTime,_tokenPrice) {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
@@ -91,22 +91,12 @@ async function createSale(_startTime, _endTime,_tokenPrice) {
 
 async function buyTokens(paymentMethod,paymentAmount) {
     try {
-        const stableCoinUsdc = new web3.eth.Contract(stablecoinAbi, usdc);
-        const mint = await stableCoinUsdc.methods.PublicMint(investor,paymentAmount).send({from:investor, gas:1000000})
-        console.log("Balance of investor",await stableCoinUsdc.methods.balanceOf(investor).call());
-        // const stableCoinUsdt = new web3.eth.Contract(stablecoinAbi, usdt);
-        const approvedAmount = await stableCoinUsdc.methods.approve(icoAddress,paymentAmount).send({from : investor})
-        console.log("Approved",approvedAmount);
-        
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
         let tx;
         
             if(paymentMethod === 0 ||paymentMethod === 1 ){
-                // console.log("entered If Lop");
                 const gasCostBuyTokensNative = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).estimateGas({
                     from : investor, value : paymentAmount})
-                    // console.log("gasCostBuyTokensNative",gasCostBuyTokensNative);
-                    
                 tx = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).send({
                     from: investor,
                     value: paymentAmount,
@@ -114,11 +104,7 @@ async function buyTokens(paymentMethod,paymentAmount) {
                 })
             }
             else if(paymentMethod === 2 ||paymentMethod === 3 ){
-                // console.log("Entered Else If loop");
-                // console.log("Payment Method",paymentMethod);
-                // console.log("Payment Amount",paymentAmount);
                 const gasCostBuyTokens = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).estimateGas({from: investor})
-                    // console.log("gasCostBuyTokens",gasCostBuyTokens);
                 tx = await icoContract.methods.buyTokens(paymentMethod,paymentAmount).send({
                     from: investor,
                     gas: gasCostBuyTokens
@@ -311,15 +297,6 @@ async function tokensBoughtByInvestor() {
 
 
 
-async function contributionsInUSD() {
-    try {
-        const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const tx = await icoContract.methods.contributionsInUSD().call()
-        console.log('Contributions :', tx);
-    } catch (error) {
-        console.error('An error occurred:', error);
-    }
-}
 
 
 
@@ -329,21 +306,30 @@ async function totalTokensSold() {
         const tx = await icoContract.methods.totalTokensSold().call()
         console.log('Total Tokens Sold :', tx);
     } catch (error) {
-        console.error('An error occurred:', error);
-    }
-}
-
-
-
-async function totalFundsRaised() {
+        console.error('An error occurred:', error);async function contributionsInUSD() {
     try {
         const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
-        const tx = await icoContract.methods.totalFundsRaisedUSD().call()
-        console.log('Total Funds Raised :', tx);
+        const tx = await icoContract.methods.contributionsInUSD().call()
+        console.log('Contributions :', tx);
     } catch (error) {
         console.error('An error occurred:', error);
     }
 }
+
+    }
+}
+
+
+
+    async function totalFundsRaised() {
+        try {
+            const icoContract = new web3.eth.Contract(icoAbi, icoAddress);
+            const tx = await icoContract.methods.totalFundsRaisedUSD().call()
+            console.log('Total Funds Raised :', tx);
+        } catch (error) {
+            console.error('An error occurred:', error);
+        }
+    }
 
 
 async function getInvestorCount() {
@@ -457,4 +443,4 @@ async function saleDetails(_index) {
 // softCapAmount()
 // hardCapAmount()
 // saleDetails(1)
-walletTokenBalance("0x29F135E92205f8f19dfB5Ea4D8885594FE77C8BD","0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b")
+// walletTokenBalance("0x29F135E92205f8f19dfB5Ea4D8885594FE77C8BD","0x2bc91471cFA63ecD5d3EC3fC408326D3B338E18b")

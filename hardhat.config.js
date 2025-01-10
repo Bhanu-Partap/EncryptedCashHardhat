@@ -12,7 +12,7 @@ module.exports = {
     },
     BSC: {
       url: RPC_URL_BSC,
-      accounts:[`0x${PRIVATE_KEY_INVESTOR}`]
+      accounts:[`0x${PRIVATE_KEY}`,`0x${PRIVATE_KEY_INVESTOR}`]
     }
   },
   solidity: "0.8.26",

@@ -34,7 +34,6 @@ async function main() {
   
   const softCap = ethers.parseEther("100")
   const hardCap = ethers.parseEther("200")
-  const priceFeedETH = "0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7"
   const priceFeedBNB = "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526"
   const priceFeedUSDT = "0xEca2605f0BCF2BA5966372C99837b1F182d3D620"
   const priceFeedUSDC = "0x90c069C4538adAc136E051052E14c1cD799C41B7"
@@ -53,4 +52,3 @@ main().catch((error) => {
   process.exitCode = 1;
 });
 
-// npx hardhat run scripts/deploy.js --network any

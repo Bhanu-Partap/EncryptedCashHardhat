@@ -258,7 +258,5 @@ describe("ICO Contract", function () {
     const tokenPrice = ethers.parseEther("1");
     expect(await ico.connect(owner)._getPriceFeed(1)).to.be.equal(67000000000);
 });
-
-
 });
 
